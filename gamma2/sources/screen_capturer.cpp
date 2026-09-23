@@ -113,32 +113,6 @@ void ScreenCapturer::InitDesktopDuplication()
 
     // Enable entire screen image duplication:
     Ensure(dxgiOutput1->DuplicateOutput(m_device.Get(), &m_desktopDuplication));
-
-    // Screenshot texture and SRV for it:
-    D3D11_TEXTURE2D_DESC textureDesc = {};
-    // IDXGIOutputDuplication::AcquireNextFrame() will return texture with BRGA8 format
-    // and it must be the same here for CopyResource():
-    textureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    textureDesc.Width = GetSystemMetrics(SM_CXSCREEN);
-    textureDesc.Height = GetSystemMetrics(SM_CYSCREEN);
-    textureDesc.MipLevels = 1;
-    textureDesc.ArraySize = 1;
-    textureDesc.SampleDesc.Count = 1;
-    textureDesc.SampleDesc.Quality = 0;
-    textureDesc.Usage = D3D11_USAGE_DEFAULT;
-    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-
-    Ensure(m_device->CreateTexture2D(&textureDesc, nullptr, &m_entireScreenImage));
-
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Format = textureDesc.Format;
-    srvDesc.Texture2D.MipLevels = textureDesc.MipLevels;
-
-    Ensure(m_device->CreateShaderResourceView(
-        m_entireScreenImage.Get(),
-        &srvDesc,
-        &m_entireScreenImageSRV));
 }
 
 void ScreenCapturer::InitSamplers()
@@ -214,21 +188,40 @@ void ScreenCapturer::Render()
 
     ApplyGamma();
 
-    m_swapchain->Present(1, 0);
+    m_swapchain->Present(0, 0);
 }
 
 void ScreenCapturer::TakeScreenshot()
 {
+    static bool isFirstFrame = true;
+
+    if (!isFirstFrame)
+    {
+        // we need to release prev. screenshot before new:
+        m_desktopDuplication->ReleaseFrame();
+    }
+
     DXGI_OUTDUPL_FRAME_INFO frameInfo;
     ComPtr<IDXGIResource> screenshot;
     Ensure(m_desktopDuplication->AcquireNextFrame(INFINITE, &frameInfo, &screenshot));
 
-    ComPtr<ID3D11Texture2D> screenshotTexture;
-    Ensure(screenshot->QueryInterface(IID_PPV_ARGS(&screenshotTexture)));
+    Ensure(screenshot->QueryInterface(IID_PPV_ARGS(&m_entireScreenImage)));
 
-    m_deviceContext->CopyResource(m_entireScreenImage.Get(), screenshotTexture.Get());
+    // Create SRV for screenshot:
+    if (isFirstFrame)
+    {        
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+        srvDesc.ViewDimension = D3D_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // IDXGIOutputDuplication::AcquireNextFrame() returns BRGA8
+        srvDesc.Texture2D.MipLevels = 1;
 
-    m_desktopDuplication->ReleaseFrame();
+        Ensure(m_device->CreateShaderResourceView(
+            m_entireScreenImage.Get(),
+            &srvDesc,
+            &m_entireScreenImageSRV));
+
+        isFirstFrame = false;
+    }
 }
 
 void ScreenCapturer::ApplyGamma()

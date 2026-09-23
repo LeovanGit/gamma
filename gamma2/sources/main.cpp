@@ -20,7 +20,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    Window window(0, 200, 1920, 680, WindowProc, hInstance);
+    Window window(0, 0, 1920, 1080, WindowProc, hInstance);
     ScreenCapturer sc(window);
 
     MSG msg;
@@ -35,8 +35,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
 
         sc.Render();
-
-        Sleep(10); // to avoid 100% CPU load
     }
 
     return 0;
