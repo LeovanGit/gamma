@@ -71,6 +71,6 @@ void Window::ShowImage(HDC image)
         image,
         &imagePosition,
         0,
-        &m_blend,
-        ULW_ALPHA);
+        NULL, // &m_blend
+        ULW_OPAQUE); // ULW_ALPHA
 }

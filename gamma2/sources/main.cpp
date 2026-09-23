@@ -37,7 +37,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
 
         sc.TakeScreenshot();
-        //sc.ApplyGamma();
+        sc.ApplyGamma();
 
         window.ShowImage(sc.GetScreenshot());
 
