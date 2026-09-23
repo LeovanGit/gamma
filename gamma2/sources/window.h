@@ -13,13 +13,11 @@ public:
 		WNDPROC windowProc,
 		HINSTANCE hInstance);
 
-	void ChangeVisibility(bool show);
-
-	void ShowImage(HDC image);
-
 	HWND GetHWND() const;
 
 	SIZE GetSize() const;
+
+	void ChangeVisibility(bool show);
 
 private:
 	HWND m_windowHwnd;
@@ -28,6 +26,4 @@ private:
 	SIZE m_size;
 
 	bool m_isVisible;
-
-	BLENDFUNCTION m_blend;
 };

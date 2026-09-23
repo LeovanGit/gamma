@@ -45,34 +45,6 @@ Window::Window(
     SetWindowDisplayAffinity(m_windowHwnd, WDA_EXCLUDEFROMCAPTURE);
 
     ShowWindow(m_windowHwnd, SW_SHOW);
-
-    ZeroMemory(&m_blend, sizeof(BLENDFUNCTION));
-    m_blend.BlendOp = AC_SRC_OVER;
-    m_blend.BlendFlags = 0;
-    m_blend.SourceConstantAlpha = 255;
-    m_blend.AlphaFormat = AC_SRC_ALPHA;
-}
-
-void Window::ChangeVisibility(bool show)
-{
-    ShowWindow(m_windowHwnd, show ? SW_SHOW : SW_HIDE);
-    m_isVisible = show;
-}
-
-void Window::ShowImage(HDC image)
-{
-    POINT imagePosition = { 0, 0 };
-    
-    UpdateLayeredWindow(
-        m_windowHwnd,
-        NULL,
-        &m_pos,
-        &m_size,
-        image,
-        &imagePosition,
-        0,
-        NULL, // &m_blend
-        ULW_OPAQUE); // ULW_ALPHA
 }
 
 HWND Window::GetHWND() const
@@ -84,3 +56,10 @@ SIZE Window::GetSize() const
 {
     return m_size;
 }
+
+void Window::ChangeVisibility(bool show)
+{
+    ShowWindow(m_windowHwnd, show ? SW_SHOW : SW_HIDE);
+    m_isVisible = show;
+}
+

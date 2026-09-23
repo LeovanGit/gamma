@@ -12,67 +12,58 @@ namespace
 class ScreenCapturer
 {
 public:
-	ScreenCapturer(
-        ScreenRect& rect,
-        Window& window);
+	ScreenCapturer(Window& window);
 
     ~ScreenCapturer();
 
     void Render();
 
-
-
 	void TakeScreenshot();
 
     void ApplyGamma();
 
-    HDC GetScreenshot();
-
 private:
-    void InitD3D12();
+    void InitD3D11();
     void InitDeviceAndDebug();
-    void InitCommandObjects();
-    void InitSyncObjects();
-    void InitDescriptorHeaps();
     void InitSwapchain();
+    void InitDesktopDuplication();
+    void InitSamplers();
 
-    D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandleRTV(uint32_t index);
+    enum class ShaderType
+    {
+        VertexShader,
+        PixelShader
+    };
 
-    ScreenRect m_captureArea;
-
-    HWND m_entireScreenHWND;
-    HDC m_entireScreenHDC;
-    HDC m_entireScreenMemHDC;
-
-    void* m_pixels;
-    HBITMAP m_hBitmap;
-    HGDIOBJ m_hOldObject;
-
-
-
+    void CompileShader(
+        const std::wstring& filename,
+        const std::string& entryPoint,
+        ShaderType shaderType);
 
     Window& m_window;
 
-    ComPtr<IDXGIFactory6> m_dxgiFactory;
+    ComPtr<IDXGIFactory5> m_dxgiFactory;
 
-    ComPtr<ID3D12Device> m_device;
+    ComPtr<ID3D11Device> m_device;
+    ComPtr<ID3D11DeviceContext> m_deviceContext;
     
 #if defined(DEBUG) || defined(_DEBUG)
-    ComPtr<ID3D12Debug1> m_debug;
+    ComPtr<ID3D11Debug> m_debug;
 #endif
 
-    ComPtr<ID3D12CommandQueue> m_cmdQueue;
-    ComPtr<ID3D12CommandAllocator> m_cmdAlloc;
-    ComPtr<ID3D12GraphicsCommandList> m_cmdList;
-
-    ComPtr<ID3D12Fence> m_fence;
-    uint64_t m_fenceValue;
-
-    ComPtr<ID3D12DescriptorHeap> m_descHeapRTV;
-    // ComPtr<ID3D12DescriptorHeap> m_SRVDescHeap; // ?, for screnshot
-    uint64_t m_descHandleIncrementSizeRTV;
-
-
     ComPtr<IDXGISwapChain1> m_swapchain;
-    ComPtr<ID3D12Resource> m_swapchainBuffers[swapchainBuffersCount];
+    ComPtr<ID3D11Texture2D> m_backbuffer;
+    ComPtr<ID3D11RenderTargetView> m_renderTargetView;
+    
+    D3D11_VIEWPORT viewport;
+
+    ComPtr<IDXGIOutputDuplication> m_desktopDuplication;
+    ComPtr<ID3D11Texture2D> m_entireScreenImage;
+    ComPtr<ID3D11ShaderResourceView> m_entireScreenImageSRV;
+    ComPtr<ID3D11SamplerState> m_sampler;
+
+    // Since we will have only one shader - I won't
+    // create ShaderManager class:
+    ComPtr<ID3D11VertexShader> m_vertexShader;
+    ComPtr<ID3D11PixelShader> m_pixelShader;
 };

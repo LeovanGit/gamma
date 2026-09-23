@@ -2,13 +2,15 @@
 
 #include <windows.h>
 
-#include <d3d12.h>
-#include <dxgi1_6.h>
+#include <d3d11.h>
+#include <dxgi1_5.h>
 #include <wrl/client.h>
 
 #include <cstdint>
 #include <vector>
 #include <cassert>
+#include <string>
+#include <iostream>
 
 struct ScreenRect
 {
