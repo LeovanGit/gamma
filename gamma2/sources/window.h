@@ -17,13 +17,17 @@ public:
 
 	void ShowImage(HDC image);
 
+	HWND GetHWND() const;
+
+	SIZE GetSize() const;
+
 private:
+	HWND m_windowHwnd;
+
 	POINT m_pos;
 	SIZE m_size;
 
 	bool m_isVisible;
-
-	HWND m_windowHwnd;
 
 	BLENDFUNCTION m_blend;
 };

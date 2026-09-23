@@ -74,3 +74,13 @@ void Window::ShowImage(HDC image)
         NULL, // &m_blend
         ULW_OPAQUE); // ULW_ALPHA
 }
+
+HWND Window::GetHWND() const
+{
+    return m_windowHwnd;
+}
+
+SIZE Window::GetSize() const
+{
+    return m_size;
+}

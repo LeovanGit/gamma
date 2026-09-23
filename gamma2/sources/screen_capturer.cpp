@@ -1,6 +1,10 @@
 ﻿#include "screen_capturer.h"
 
-ScreenCapturer::ScreenCapturer(ScreenRect& rect) : m_captureArea(rect)
+ScreenCapturer::ScreenCapturer(
+    ScreenRect& rect,
+    Window& window)
+    : m_captureArea(rect)
+    , m_window(window)
 {
     // Window's Handle (pointer to specific window):
     m_entireScreenHWND = GetDesktopWindow();
@@ -28,6 +32,120 @@ ScreenCapturer::ScreenCapturer(ScreenRect& rect) : m_captureArea(rect)
     // Bind m_hBitmap to Memory DC (m_entireScreenMemHDC)
     // and save prev. bind into m_hOldObject (for destructor):
     m_hOldObject = SelectObject(m_entireScreenMemHDC, m_hBitmap);
+
+    
+    
+
+    InitD3D12();
+}
+
+void ScreenCapturer::InitD3D12()
+{
+    InitDeviceAndDebug();
+    InitCommandObjects();
+    InitSyncObjects();
+    InitDescriptorHeaps();
+    InitSwapchain();
+}
+
+void ScreenCapturer::InitDeviceAndDebug()
+{
+    Ensure(CreateDXGIFactory1(IID_PPV_ARGS(&m_dxgiFactory)));
+
+#if defined(DEBUG) || defined(_DEBUG)
+    Ensure(D3D12GetDebugInterface(IID_PPV_ARGS(&m_debug)));
+
+    m_debug->EnableDebugLayer();
+    m_debug->SetEnableGPUBasedValidation(true);
+#endif
+
+    Ensure(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&m_device)));
+}
+
+void ScreenCapturer::InitCommandObjects()
+{
+    D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = {};
+    cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+    cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    cmdQueueDesc.NodeMask = 0;
+
+    Ensure(m_device->CreateCommandQueue(
+        &cmdQueueDesc,
+        IID_PPV_ARGS(&m_cmdQueue)));
+
+    Ensure(m_device->CreateCommandAllocator(
+        D3D12_COMMAND_LIST_TYPE_DIRECT,
+        IID_PPV_ARGS(&m_cmdAlloc)));
+
+    Ensure(m_device->CreateCommandList(
+        0,
+        D3D12_COMMAND_LIST_TYPE_DIRECT,
+        m_cmdAlloc.Get(),
+        nullptr,
+        IID_PPV_ARGS(&m_cmdList)));
+
+    m_cmdList->Close();
+}
+
+void ScreenCapturer::InitSyncObjects()
+{
+    m_fenceValue = 0;
+    Ensure(m_device->CreateFence(m_fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+}
+
+void ScreenCapturer::InitDescriptorHeaps()
+{
+    D3D12_DESCRIPTOR_HEAP_DESC rtvDesc = {};
+    rtvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtvDesc.NumDescriptors = swapchainBuffersCount;
+    rtvDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    rtvDesc.NodeMask = 0;
+
+    Ensure(m_device->CreateDescriptorHeap(&rtvDesc, IID_PPV_ARGS(&m_descHeapRTV)));
+
+    m_descHandleIncrementSizeRTV = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+}
+
+void ScreenCapturer::InitSwapchain()
+{
+    DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
+    swapchainDesc.Width = m_window.GetSize().cx;
+    swapchainDesc.Height = m_window.GetSize().cy;
+    swapchainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    swapchainDesc.BufferCount = swapchainBuffersCount;
+    swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapchainDesc.Scaling = DXGI_SCALING::DXGI_SCALING_STRETCH;
+    swapchainDesc.SampleDesc.Count = 1;
+    swapchainDesc.SampleDesc.Quality = 0;
+    swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapchainDesc.Flags = 0;
+
+    DXGI_SWAP_CHAIN_FULLSCREEN_DESC swapchainFullscreenDesc = {};
+    swapchainFullscreenDesc.Windowed = true;
+
+    Ensure(m_dxgiFactory->CreateSwapChainForHwnd(
+        m_device.Get(),
+        m_window.GetHWND(),
+        &swapchainDesc,
+        &swapchainFullscreenDesc,
+        nullptr,
+        &m_swapchain));
+
+    for (uint8_t i = 0; i != swapchainBuffersCount; ++i)
+    {
+        Ensure(m_swapchain->GetBuffer(i, IID_PPV_ARGS(&m_swapchainBuffers[i])));
+
+        m_device->CreateRenderTargetView(m_swapchainBuffers[i].Get(), nullptr, GetCPUDescriptorHandleRTV(i));
+    }
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE ScreenCapturer::GetCPUDescriptorHandleRTV(uint32_t index)
+{
+    D3D12_CPU_DESCRIPTOR_HANDLE heapHandle = m_descHeapRTV->GetCPUDescriptorHandleForHeapStart();
+    heapHandle.ptr += index * m_descHandleIncrementSizeRTV;
+
+    return heapHandle;
 }
 
 ScreenCapturer::~ScreenCapturer()
@@ -40,6 +158,14 @@ ScreenCapturer::~ScreenCapturer()
     DeleteDC(m_entireScreenMemHDC);
     ReleaseDC(m_entireScreenHWND, m_entireScreenHDC);
 }
+
+
+void ScreenCapturer::Render()
+{
+
+}
+
+
 
 void ScreenCapturer::TakeScreenshot()
 {
