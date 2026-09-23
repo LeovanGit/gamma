@@ -63,3 +63,8 @@ void Window::ChangeVisibility(bool show)
     m_isVisible = show;
 }
 
+void Window::ToggleVisibility()
+{
+    m_isVisible ? ChangeVisibility(false) : ChangeVisibility(true);
+}
+

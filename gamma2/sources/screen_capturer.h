@@ -40,6 +40,10 @@ private:
         const std::string& entryPoint,
         ShaderType shaderType);
 
+    void LoadTexture(
+        const std::wstring& filename,
+        ComPtr<ID3D11ShaderResourceView>& outTextureSRV);
+
     Window& m_window;
 
     ComPtr<IDXGIFactory5> m_dxgiFactory;
@@ -66,4 +70,11 @@ private:
     // create ShaderManager class:
     ComPtr<ID3D11VertexShader> m_vertexShader;
     ComPtr<ID3D11PixelShader> m_pixelShader;
+
+    // Since we will have only several textures - I won't
+    // create TextureManager class
+    // (in D3D11 we don't need to store ID3D11Texture, we
+    // can store only its descriptors):
+    ComPtr<ID3D11ShaderResourceView> m_uiMaskSRV;
+    ComPtr<ID3D11ShaderResourceView> m_bunnySRV;
 };

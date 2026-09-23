@@ -102,6 +102,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)external\dds_texture_loader\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -117,6 +118,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)external\dds_texture_loader\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -125,11 +127,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="external\dds_texture_loader\DDSTextureLoader11.cpp" />
     <ClCompile Include="sources\main.cpp" />
     <ClCompile Include="sources\screen_capturer.cpp" />
     <ClCompile Include="sources\window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="external\dds_texture_loader\DDSTextureLoader11.h" />
     <ClInclude Include="sources\screen_capturer.h" />
     <ClInclude Include="sources\types.h" />
     <ClInclude Include="sources\window.h" />

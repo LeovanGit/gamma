@@ -11,6 +11,7 @@
 #include <cassert>
 #include <string>
 #include <iostream>
+#include <functional>
 
 struct ScreenRect
 {

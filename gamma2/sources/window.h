@@ -19,6 +19,8 @@ public:
 
 	void ChangeVisibility(bool show);
 
+	void ToggleVisibility();
+
 private:
 	HWND m_windowHwnd;
 

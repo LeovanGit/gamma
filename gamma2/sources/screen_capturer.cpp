@@ -1,6 +1,7 @@
 ﻿#include "screen_capturer.h"
 
 #include <d3dcompiler.h>
+#include "DDSTextureLoader11.h"
 
 // Use discrete GPU instead of integrated by default:
 extern "C"
@@ -15,6 +16,9 @@ ScreenCapturer::ScreenCapturer(Window& window) : m_window(window)
 
     CompileShader(L"shaders/gamma.hlsl", "FullscreenTriangleVS", ShaderType::VertexShader);
     CompileShader(L"shaders/gamma.hlsl", "GammaPS", ShaderType::PixelShader);
+
+    LoadTexture(L"assets/bunny.dds", m_bunnySRV);
+    LoadTexture(L"assets/ui_mask.dds", m_uiMaskSRV);
 }
 
 void ScreenCapturer::InitD3D11()
@@ -175,6 +179,18 @@ void ScreenCapturer::CompileShader(
     }
 }
 
+void ScreenCapturer::LoadTexture(
+    const std::wstring& filename,
+    ComPtr<ID3D11ShaderResourceView>& outTextureSRV)
+{
+
+    Ensure(DirectX::CreateDDSTextureFromFile(
+        m_device.Get(),
+        filename.c_str(),
+        nullptr,
+        &outTextureSRV));
+}
+
 ScreenCapturer::~ScreenCapturer()
 {
 #if defined(DEBUG) || defined(_DEBUG)
@@ -197,7 +213,7 @@ void ScreenCapturer::TakeScreenshot()
 
     if (!isFirstFrame)
     {
-        // we need to release prev. screenshot before new:
+        // we need to release prev. screenshot before acquire new:
         m_desktopDuplication->ReleaseFrame();
     }
 
@@ -233,7 +249,14 @@ void ScreenCapturer::ApplyGamma()
     m_deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
     m_deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 
-    m_deviceContext->PSSetShaderResources(0, 1, m_entireScreenImageSRV.GetAddressOf());
+    ID3D11ShaderResourceView* textures[] =
+    {
+        m_entireScreenImageSRV.Get(),
+        m_uiMaskSRV.Get(),
+        //m_bunnySRV.Get()
+    };
+
+    m_deviceContext->PSSetShaderResources(0, 2, textures);
     // m_deviceContext->PSSetSamplers(0, 1, m_sampler.GetAddressOf());
 
     m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
