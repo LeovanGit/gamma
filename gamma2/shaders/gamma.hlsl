@@ -43,12 +43,8 @@ VSOutput FullscreenTriangleVS(uint vertexIndex : SV_VertexID)
 
 float4 GammaPS(VSOutput input) : SV_TARGET0
 {
-    // For performance we will copy and bind entire screen image (using CopyResource()),
-    // so we need to cut it to our window (render target) sizes here:
-    Rect g_windowSize = { 0, 0, 1920, 1080 };
-    
-    int x = input.posCS.x + g_windowSize.left;
-    int y = input.posCS.y + g_windowSize.top;
+    int x = input.posCS.x;
+    int y = input.posCS.y;
     
     float4 color = g_entireScreenImage.Load(int3(x, y, 0));
     

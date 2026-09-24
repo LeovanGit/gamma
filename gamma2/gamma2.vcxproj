@@ -129,7 +129,6 @@
   <ItemGroup>
     <ClCompile Include="external\dds_texture_loader\DDSTextureLoader11.cpp" />
     <ClCompile Include="sources\hotkeys.cpp" />
-    <ClCompile Include="sources\hotkeys_controller.cpp" />
     <ClCompile Include="sources\main.cpp" />
     <ClCompile Include="sources\screen_capturer.cpp" />
     <ClCompile Include="sources\window.cpp" />
@@ -137,7 +136,6 @@
   <ItemGroup>
     <ClInclude Include="external\dds_texture_loader\DDSTextureLoader11.h" />
     <ClInclude Include="sources\hotkeys.h" />
-    <ClInclude Include="sources\hotkeys_controller.h" />
     <ClInclude Include="sources\screen_capturer.h" />
     <ClInclude Include="sources\types.h" />
     <ClInclude Include="sources\window.h" />

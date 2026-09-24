@@ -200,30 +200,34 @@ ScreenCapturer::~ScreenCapturer()
 
 void ScreenCapturer::Render()
 {
-    TakeScreenshot();
+    if (!TakeScreenshot()) return;
 
     ApplyGamma();
 
     m_swapchain->Present(0, 0);
 }
 
-void ScreenCapturer::TakeScreenshot()
+bool ScreenCapturer::TakeScreenshot()
 {
     static bool isFirstFrame = true;
 
     if (!isFirstFrame)
     {
         // we need to release prev. screenshot before acquire new:
-        m_desktopDuplication->ReleaseFrame();
+        Ensure(m_desktopDuplication->ReleaseFrame());
     }
 
     DXGI_OUTDUPL_FRAME_INFO frameInfo;
     ComPtr<IDXGIResource> screenshot;
-    Ensure(m_desktopDuplication->AcquireNextFrame(INFINITE, &frameInfo, &screenshot));
+    HRESULT hr = m_desktopDuplication->AcquireNextFrame(0, &frameInfo, &screenshot);
+
+    // Screen content did not change from prev. frame:
+    if (hr == DXGI_ERROR_WAIT_TIMEOUT) return false;
+    Ensure(hr);
 
     Ensure(screenshot->QueryInterface(IID_PPV_ARGS(&m_entireScreenImage)));
 
-    // Create SRV for screenshot:
+    // TODO: probably its UB and we need to recreate SRV each time:
     if (isFirstFrame)
     {        
         D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};

@@ -1,7 +1,12 @@
 ﻿#include "screen_capturer.h"
 #include "window.h"
-#include "hotkeys_controller.h"
+#include "hotkeys.h"
 #include "types.h"
+
+namespace
+{
+    constexpr int mainKey = 'Z';
+} // namespace
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -21,10 +26,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    Window window(0, 0, 1920, 1080, WindowProc, hInstance);
+    uint16_t screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    uint16_t screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+    Window window(0, 0, screenWidth, screenHeight, WindowProc, hInstance);
     ScreenCapturer sc(window);
 
-    HotkeysController hotkeys;
+    bool wantWindowVisible = false;
+
+    Hotkeys hotkeys;
+
+    hotkeys.AddKey(
+        mainKey,
+        [&]() { wantWindowVisible = !wantWindowVisible; },
+        nullptr);
 
     MSG msg;
     while (true)
@@ -37,7 +52,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             DispatchMessage(&msg);
         }
 
-		hotkeys.ProcessHotkeys();
+		hotkeys.ProcessKeys();
 
 		// We need to render new frame BEFORE we unhide window
 		// (because when window is hidden, we don't render and
@@ -45,15 +60,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		// can cause flashbang effect), so we will just set
 		// wantWindowVisible bool in keys loop and actually
 		// show window only after render:
-        bool wantWindowVisible = hotkeys.WantWindowVisible();
-
 		if (wantWindowVisible)
 		{
 			sc.Render();
 		}
 		else
 		{
-			Sleep(10); // to avoid 100% CPU load
+			// To avoid 100% CPU load - wait any window MSG with 10 ms timeout:
+            MsgWaitForMultipleObjectsEx(0, nullptr, 10, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
 		}
 
 		window.SetVisibility(wantWindowVisible);

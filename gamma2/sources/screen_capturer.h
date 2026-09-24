@@ -18,7 +18,7 @@ public:
 
     void Render();
 
-	void TakeScreenshot();
+	bool TakeScreenshot();
 
     void ApplyGamma();
 
