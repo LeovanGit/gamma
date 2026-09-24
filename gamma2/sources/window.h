@@ -17,9 +17,9 @@ public:
 
 	SIZE GetSize() const;
 
-	void ChangeVisibility(bool show);
+	void SetVisibility(bool show);
 
-	void ToggleVisibility();
+	bool IsVisible() const;
 
 private:
 	HWND m_windowHwnd;

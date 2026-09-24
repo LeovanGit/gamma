@@ -72,8 +72,8 @@ void ScreenCapturer::InitSwapchain()
     swapchainDesc.Height = m_window.GetSize().cy;
     swapchainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     swapchainDesc.BufferCount = swapchainBuffersCount;
-    swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    swapchainDesc.Scaling = DXGI_SCALING::DXGI_SCALING_STRETCH;
+    swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapchainDesc.Scaling = DXGI_SCALING_STRETCH;
     swapchainDesc.SampleDesc.Count = 1;
     swapchainDesc.SampleDesc.Quality = 0;
     swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;

@@ -14,8 +14,6 @@ Window::Window(
     m_size.cx = width;
     m_size.cy = height;
 
-    m_isVisible = true;
-
     WNDCLASSEX windowClass;
     ZeroMemory(&windowClass, sizeof(WNDCLASSEX));
     windowClass.cbSize = sizeof(WNDCLASSEX);
@@ -44,7 +42,8 @@ Window::Window(
     // Disable ability to capture this window (so our ScreenCapturer doesn't capture it):
     SetWindowDisplayAffinity(m_windowHwnd, WDA_EXCLUDEFROMCAPTURE);
 
-    ShowWindow(m_windowHwnd, SW_SHOW);
+    ShowWindow(m_windowHwnd, SW_HIDE);
+    m_isVisible = false;
 }
 
 HWND Window::GetHWND() const
@@ -57,14 +56,15 @@ SIZE Window::GetSize() const
     return m_size;
 }
 
-void Window::ChangeVisibility(bool show)
+void Window::SetVisibility(bool show)
 {
+    if (m_isVisible == show) return;
+
     ShowWindow(m_windowHwnd, show ? SW_SHOW : SW_HIDE);
     m_isVisible = show;
 }
 
-void Window::ToggleVisibility()
+bool Window::IsVisible() const
 {
-    m_isVisible ? ChangeVisibility(false) : ChangeVisibility(true);
+    return m_isVisible;
 }
-
