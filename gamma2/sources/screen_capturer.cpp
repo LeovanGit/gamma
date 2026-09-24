@@ -17,7 +17,7 @@ ScreenCapturer::ScreenCapturer(Window& window) : m_window(window)
     CompileShader(L"shaders/gamma.hlsl", "FullscreenTriangleVS", ShaderType::VertexShader);
     CompileShader(L"shaders/gamma.hlsl", "GammaPS", ShaderType::PixelShader);
 
-    LoadTexture(L"assets/bunny.dds", m_bunnySRV);
+    // LoadTexture(L"assets/bunny.dds", m_bunnySRV);
     LoadTexture(L"assets/ui_mask.dds", m_uiMaskSRV);
 }
 

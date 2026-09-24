@@ -76,5 +76,5 @@ private:
     // (in D3D11 we don't need to store ID3D11Texture, we
     // can store only its descriptors):
     ComPtr<ID3D11ShaderResourceView> m_uiMaskSRV;
-    ComPtr<ID3D11ShaderResourceView> m_bunnySRV;
+    // ComPtr<ID3D11ShaderResourceView> m_bunnySRV;
 };
