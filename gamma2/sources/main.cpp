@@ -26,20 +26,26 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    uint16_t screenWidth = GetSystemMetrics(SM_CXSCREEN);
-    uint16_t screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    uint16_t screenWidth = 1920;
+    uint16_t screenHeight = 1080;
 
     Window window(0, 0, screenWidth, screenHeight, WindowProc, hInstance);
     ScreenCapturer sc(window);
 
     bool wantWindowVisible = false;
+    bool absolutelyDisabled = true;
 
     Hotkeys hotkeys;
 
     hotkeys.AddKey(
         mainKey,
-        [&]() { wantWindowVisible = !wantWindowVisible; },
+        [&]() { absolutelyDisabled = !absolutelyDisabled; wantWindowVisible = !wantWindowVisible; },
         nullptr);
+
+    hotkeys.AddKey(
+        'G',
+        [&]() { if (absolutelyDisabled) return; wantWindowVisible = false; },
+        [&]() { if (absolutelyDisabled) return; Sleep(300); wantWindowVisible = true; });
 
     MSG msg;
     while (true)
